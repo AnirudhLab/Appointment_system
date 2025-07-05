@@ -8,6 +8,7 @@ import time
 import requests
 from datetime import datetime
 import threading
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -17,15 +18,19 @@ appointments = []
 otp_store = {}  # { email: { 'otp': '123456', 'expires': timestamp } }
 
 # Google Sheets setup
+ENV = os.environ.get('ENV', 'local')
+if ENV == 'production':
+    SERVICE_ACCOUNT_PATH = os.environ['GOOGLE_SERVICE_ACCOUNT']
+    N8N_WEBHOOK_URL = os.environ['N8N_WEBHOOK_URL']
+else:
+    SERVICE_ACCOUNT_PATH = 'service_account.json'
+    N8N_WEBHOOK_URL = 'https://primary-production-4d39.up.railway.app/webhook/send-otp'
+
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-CREDS = Credentials.from_service_account_file('service_account.json', scopes=SCOPES)
+CREDS = Credentials.from_service_account_file(SERVICE_ACCOUNT_PATH, scopes=SCOPES)
 gc = gspread.authorize(CREDS)
 SHEET_ID = '1MEdW8nlyaSpUyPYIKFSRScoyqMJpmOxtzH1wsrGpPpA'  # e.g., '1A2B3C4D5E6F7G8H9I0J'
 worksheet = gc.open_by_key(SHEET_ID).sheet1
-
-# n8n webhook URL (replace with your actual n8n webhook URL)
-N8N_WEBHOOK_URL = 'https://primary-production-4d39.up.railway.app/webhook-test/send-otp'
-N8N_WEBHOOK_URL = 'https://primary-production-4d39.up.railway.app/webhook/send-otp'
 
 ADMIN_EMAIL = 'anirudhpatilmail@gmail.com'
 
