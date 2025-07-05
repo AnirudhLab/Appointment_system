@@ -19,14 +19,15 @@ appointments = []
 otp_store = {}  # { email: { 'otp': '123456', 'expires': timestamp } }
 
 # Google Sheets setup
-ENV = os.environ.get('ENV', 'local')
-if ENV == 'production':
+SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+
+if os.environ.get('GOOGLE_SERVICE_ACCOUNT'):
+    # Use environment variable (Railway/production)
     service_account_info = json.loads(os.environ['GOOGLE_SERVICE_ACCOUNT'])
-    CREDS = Credentials.from_service_account_info(service_account_info, scopes=['https://www.googleapis.com/auth/spreadsheets'])
-    N8N_WEBHOOK_URL = os.environ['N8N_WEBHOOK_URL']
+    CREDS = Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
 else:
-    CREDS = Credentials.from_service_account_file('service_account.json', scopes=['https://www.googleapis.com/auth/spreadsheets'])
-    N8N_WEBHOOK_URL = 'https://primary-production-4d39.up.railway.app/webhook/send-otp'
+    # Use local file (development)
+    CREDS = Credentials.from_service_account_file('service_account.json', scopes=SCOPES)
 
 gc = gspread.authorize(CREDS)
 SHEET_ID = '1MEdW8nlyaSpUyPYIKFSRScoyqMJpmOxtzH1wsrGpPpA'  # e.g., '1A2B3C4D5E6F7G8H9I0J'
