@@ -1,3 +1,14 @@
+import os
+
+# Only load .env in local development (when not on Render)
+if not os.environ.get('RENDER', None):
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+        print('Loaded .env file for local development')
+    except ImportError:
+        print('python-dotenv not installed; skipping .env loading')
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import gspread
@@ -12,7 +23,7 @@ import os
 import json
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 # In-memory storage for demo purposes
 appointments = []
@@ -39,24 +50,44 @@ report_cache = {'data': None, 'timestamp': 0}
 report_cache_lock = threading.Lock()
 REPORT_CACHE_TTL = 120  # seconds
 
+# Only load .env in local development (when not on Render)
+if not os.environ.get('RENDER', None):
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+        print('Loaded .env file for local development')
+    except ImportError:
+        print('python-dotenv not installed; skipping .env loading')
+
+N8N_WEBHOOK_URL = os.environ.get('N8N_WEBHOOK_URL', None)
+print('DEBUG: N8N_WEBHOOK_URL =', N8N_WEBHOOK_URL)
+if not N8N_WEBHOOK_URL:
+    print("WARNING: N8N_WEBHOOK_URL is not set!")
+
 @app.route('/api/request-otp', methods=['POST'])
 def request_otp():
-    data = request.get_json()
-    email = data.get('email')
-    if not email:
-        return jsonify({'message': 'Email is required'}), 400
-    # Generate 6-digit OTP
-    otp = ''.join(random.choices(string.digits, k=6))
-    expires = int(time.time()) + 300  # OTP valid for 5 minutes
-    otp_store[email] = {'otp': otp, 'expires': expires}
-    # Send OTP via n8n webhook
     try:
-        response = requests.post(N8N_WEBHOOK_URL, json={'email': email, 'otp': otp})
-        print('n8n webhook response:', response.status_code, response.text)
+        data = request.get_json(force=True)
+        print("Received data for OTP:", data)
+        email = data.get('email')
+        if not email:
+            return jsonify({'message': 'Email is required'}), 400
+        otp = ''.join(random.choices(string.digits, k=6))
+        expires = int(time.time()) + 300
+        otp_store[email] = {'otp': otp, 'expires': expires}
+        if not N8N_WEBHOOK_URL:
+            print("N8N_WEBHOOK_URL is not set!")
+            return jsonify({'message': 'Server misconfiguration: N8N_WEBHOOK_URL missing'}), 500
+        try:
+            response = requests.post(N8N_WEBHOOK_URL, json={'email': email, 'otp': otp})
+            print('n8n webhook response:', response.status_code, response.text)
+        except Exception as e:
+            print('n8n webhook error:', e)
+            return jsonify({'message': f'Failed to send OTP email: {str(e)}'}), 500
+        return jsonify({'message': 'OTP sent to email'}), 200
     except Exception as e:
-        print('n8n webhook error:', e)
-        return jsonify({'message': 'Failed to send OTP email'}), 500
-    return jsonify({'message': 'OTP sent to email'}), 200
+        print("Error in request_otp:", e)
+        return jsonify({'message': f'Failed to send OTP: {str(e)}'}), 500
 
 @app.route('/api/verify-otp', methods=['POST'])
 def verify_otp():
@@ -310,5 +341,5 @@ def get_reports():
 
 if __name__ == '__main__':
     import os
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 5001))
     app.run(host='0.0.0.0', port=port)
