@@ -46,6 +46,9 @@ worksheet = gc.open_by_key(SHEET_ID).sheet1
 
 ADMIN_EMAIL = 'venkateshmanick@gmail.com'
 
+# Debugging print statements
+print(f"DEBUG: ADMIN_EMAIL is set to: '{ADMIN_EMAIL}'")
+
 report_cache = {'data': None, 'timestamp': 0}
 report_cache_lock = threading.Lock()
 REPORT_CACHE_TTL = 120  # seconds
@@ -93,6 +96,8 @@ def request_otp():
 def verify_otp():
     data = request.get_json()
     email = data.get('email')
+    print(f"DEBUG: Received email for OTP verification: '{email}'")
+    print(f"DEBUG: Comparing received email ('{email.strip().lower()}') with ADMIN_EMAIL ('{ADMIN_EMAIL.lower()}')")
     otp = data.get('otp')
     if not email or not otp:
         return jsonify({'message': 'Email and OTP are required'}), 400
