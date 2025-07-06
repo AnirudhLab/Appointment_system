@@ -44,7 +44,7 @@ gc = gspread.authorize(CREDS)
 SHEET_ID = '1MEdW8nlyaSpUyPYIKFSRScoyqMJpmOxtzH1wsrGpPpA'  # e.g., '1A2B3C4D5E6F7G8H9I0J'
 worksheet = gc.open_by_key(SHEET_ID).sheet1
 
-ADMIN_EMAIL = 'anirudhpatilmail@gmail.com'
+ADMIN_EMAIL = 'venkateshmanick@gmail.com'
 
 report_cache = {'data': None, 'timestamp': 0}
 report_cache_lock = threading.Lock()
