@@ -35,8 +35,10 @@ import { format, isSameDay, parseISO } from 'date-fns';
 import api from '../api/api';
 import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
+import axios from 'axios';
 
-const ADMIN_EMAIL = 'anirudhpatilmail@gmail.com'; // Change this to your admin email or allow a list
+// Hardcoded admin email for simplicity, not recommended for production security.
+const ADMIN_EMAIL = 'venkateshmanick@gmail.com';
 
 const AdminDashboard = () => {
   // OTP login state
