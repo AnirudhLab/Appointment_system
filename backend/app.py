@@ -44,7 +44,7 @@ gc = gspread.authorize(CREDS)
 SHEET_ID = '1MEdW8nlyaSpUyPYIKFSRScoyqMJpmOxtzH1wsrGpPpA'  # e.g., '1A2B3C4D5E6F7G8H9I0J'
 worksheet = gc.open_by_key(SHEET_ID).sheet1
 
-ADMIN_EMAIL = 'venkateshmanick@gmail.com'
+ADMIN_EMAIL = 'anirudhpatilmail@gmail.com'
 
 # Debugging print statements
 print(f"DEBUG: ADMIN_EMAIL is set to: '{ADMIN_EMAIL}'")
