@@ -38,7 +38,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import axios from 'axios';
 
 // Hardcoded admin email for simplicity, not recommended for production security.
-const ADMIN_EMAIL = 'venkateshmanick@gmail.com';
+const ADMIN_EMAIL = 'anirudhpatilmail@gmail.com';
 
 const AdminDashboard = () => {
   // OTP login state
